@@ -2,7 +2,7 @@
 
 With the advent of HTML5, we now have a simple way to denote that a form field must be completed to submit the form, the 'required' attribute.
 
-```
+```html
 <input type='text' name='last_name' required />
 ```
 
@@ -15,7 +15,7 @@ As you can see however, the default message gives no context, and is identical f
 
 So can we change it? Yes, yes we can.
 
-```
+```html
 <input type='text' name='last_name' oninvalid="this.setCustomValidity(this.willValidate ? '' : 'Please enter your last name.')" required />
 ```
 
