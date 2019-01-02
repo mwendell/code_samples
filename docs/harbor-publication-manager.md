@@ -178,7 +178,7 @@ wp_postmeta table
 wp_options table
 - mq_pubs (serialized array)
 
-  \[featured\] radio/checkbox
-  \[sponsored\] 1/0
-  \[post_ids\] 1/0
-  \[volnum\] 1/0
+  - \[featured\] radio/checkbox
+  - \[sponsored\] 1/0
+  - \[post_ids\] 1/0
+  - \[volnum\] 1/0

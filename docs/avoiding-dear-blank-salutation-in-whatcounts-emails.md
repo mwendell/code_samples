@@ -22,6 +22,6 @@ Dear %%if first = "" then print "Colleague" else printdata first%%,
 
 Additional Reading:
 
-https://support.whatcounts.com/hc/en-us/articles/203967379-Basic-IF-THEN-Logic
-https://support.whatcounts.com/hc/en-us/articles/203967599-Salutation-Basic
-https://support.whatcounts.com/hc/en-us/articles/204667875-Salutation-First-or-Alternate-Text
+- https://support.whatcounts.com/hc/en-us/articles/203967379-Basic-IF-THEN-Logic
+- https://support.whatcounts.com/hc/en-us/articles/203967599-Salutation-Basic
+- https://support.whatcounts.com/hc/en-us/articles/204667875-Salutation-First-or-Alternate-Text
