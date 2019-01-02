@@ -18,3 +18,5 @@
 ### Plugin Documentation
 - [Harbor Publication Manager](../docs/harbor-publication-manager.md)
 - [Harbor PRD Framework](../docs/harbor-prd-framework.md)
+
+These samples have been obfuscated to remove references to employers, most specific partner API providers, and clients.
