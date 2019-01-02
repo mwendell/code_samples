@@ -1,4 +1,4 @@
-# How <site> interacts with PRD
+# How the site interacts with PRD
 Michael Wendell
 
 We have two plugins that interact directly with PRD; Haven Webhooks and Mequoda PRD API Gateway. This document briefly explains what they do and how to use them.
@@ -7,7 +7,7 @@ We have two plugins that interact directly with PRD; Haven Webhooks and Mequoda 
 
 Haven Webhooks processes new orders only. It isn't really a plugin, since it's not actually an installed WP plugin, it's just located in the plugins folder (this was a choice made by the initial developer on the plugin, we should have put it elsewhere). Nevertheless, it consists of a single PHP page in the /plugins/haven-webhooks/prd-order-confirmation/ folder that listens for what is essentially a form submission from PRD, and then processes the $_REQUEST array (typically sent in the querystring). The PHP includes some sample arrays in URL format for testing.
 
-The submission URL is https://<site>/wp-content/plugins/haven-webhooks/prd-order-confirmation/
+The submission URL is *https://www.site.com/wp-content/plugins/haven-webhooks/prd-order-confirmation/*
 
 Once data is received, the page:
 
@@ -33,8 +33,6 @@ The Haven Entitlements Manager determines how often the plugin is called, and ha
 
 You can easily test the Webhooks plugin in Haven by submitting data that mimic the data submitted by PRD. The URL below is a sample of this complete URL, simply copy it and change the values to represent the order you would like to place. Review the Haven Webhooks plugin to find appropriate magid values. Additionally, there are a number of default debug emails in /prd-order-confirmation/index.php that can be activated to help with any debugging.
 
-```
-https://<site>/wp-content/plugins/haven-webhooks/prd-order-confirmation/index.php?prd_id=123456789&name=Testy+McTesterson&magid=31903&product_term=12&payment=29.99&source_key=I6FEVG&email=testy.mctesterson@mequoda.com&haven_id=haventest1&unixtime=1675879747&product_id=DIGITAL
-```
+*https://www.site.com/wp-content/plugins/haven-webhooks/prd-order-confirmation/index.php?prd_id=123456789&name=Testy+McTesterson&magid=31903&product_term=12&payment=29.99&source_key=I6FEVG&email=testy.mctesterson@mequoda.com&haven_id=haventest1&unixtime=1675879747&product_id=DIGITAL*
 
 It should be obvious, but your new user will not validate properly through the PRD API Gateway (since they only exist in Haven). Since we typically only re-confirm entitlements every 7 to 14 days (configured in Haven Entitlements), you should be able to test with your new user successfully for a long enough period to confirm functionality.
