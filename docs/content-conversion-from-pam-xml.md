@@ -19,30 +19,30 @@ Create a folder for the images for this issue, the name here is less important. 
 > \* The _article code_ is the base name of the XML file that contains data for that article. It is also used as the name of the folder in the original zip file that contained the XML and images for this article.
 >
 > For example, *01.13.02_embed.png* would become *CLX120118WELLhallmark_lo_01.13.02_embed.png*. If we follow this consistent format it will be easy to make sure that the names are changed in the database later. You will probably only run into two or three "embed" images.
+>
+> If we've renameed any of the images, we have to make sure those names are used in the database as well. We haven't imported anything into the database yet, so we can easily search the XML files and update the image names now. Open your text editor, and with any luck it has a 'search all files in folder' capability. Search all of the files in your xml folder for the word "embed". If any instances are found you will need to to change the names here as well. If you had to change any file names, then you should definitely find some instances of that name in the XML. Simply change the filenames using the same pattern you used above; filename becomes article-code_filename. Save your changes and you're done.
 
-Now that we've renamed the images, we have to make sure those names are used in the database as well. We haven't imported anything into the database yet, so we can easily search the XML files and update the image names now. Open your text editor, and with any luck it has a 'search all files in folder' capability. Search all of the files in your xml folder for the word "embed". If any instances are found you will need to to change the names here as well. If you had to change any file names, then you should definitely find some instances of that name in the XML. Simply change the filenames using the same pattern you used above; filename becomes article-code_filename. Save your changes and you're done.
-
-Now, move your entire xml folder to the server, placing your new folder inside the /plugins/haven-helpers/ folder on the XYZ production server.
+Now, move your entire xml folder to the server, placing your new folder inside the /plugins/harbor-helpers/ folder on the XYZ production server.
 
 ### Preparing Articles for Import
 
 Run **/wp-content/plugins/xyz-import-xml.php?folder=<your_xml_folder_name>**
 
 - This script creates entries in the _temp_xyz_content_, and _temp_xyz_media tables_. The first table includes the article content, and the second table is all media references within those articles.
-- The script assumes that your folder is within the /plugins/haven/helpers/ folder, so be sure that's where it is.
+- The script assumes that your folder is within the /plugins/harbor/helpers/ folder, so be sure that's where it is.
 - If your xml folder name is aphanumeric, as specified above, you're good to go just putting it in there. If you used any characters that are not simply letters or numbers, then you'll need to urlencode the name. Here's a link to a site that will urlencode things: https://www.urlencoder.org/.
 - Once the process is complete, you can delete your xml folder from the production server.
 - The volume number is rarely set in the XML files, but can be determined by subtracting 1977 from the current year. The script will do this automatically if it is missing. However if the issue number is missing you can add it in the XML, or even easier, just add **&num=<issue_number>** to the URL above.  
 
 ### Prepare Images for Import
 
-Copy all images to /wp-content/uploads/pre-import-images/xyz-us-images/<your_image_folder_name>
+Copy all images to **/wp-content/uploads/pre-import-images/xyz-us-images/<your_image_folder_name>**
 
-Run /wp-content/plugins/xyz-media-tools.php?action=insert_files&folder=<your_image_folder_name>
+Run **/wp-content/plugins/xyz-media-tools.php?action=insert_files&folder=<your_image_folder_name>**
 
 - This script will create entries in the temp_xyz_files table for each file contained within the temporary folder.
 
-Update the file_id and filename columns of the temp_xyz_media table with the following query:
+Update the file_id and filename columns of the _temp_xyz_media_ table with the following query:
 
 ```
 UPDATE temp_xyz_media m JOIN temp_xyz_files f ON (m.image = f.filename)
@@ -54,12 +54,12 @@ Run **/wp-content/plugins/xyz-media-tools.php?action=update_media_ids**
 
 - This script will update the temp_xyz_files table with all of the media_ids used for each image.
 
-### Importing Articles and Creating Haven Pubs Issues
+### Importing Articles and Creating Harbor Pubs Issues
 
 Run **/wp-content/plugins/xyz-create-tocs.php?volume=<volume>&number=<number>**
 
-- This script will insert the articles into Haven, and once all of the articles are in place, it will create the TOCs that tie them together into an issue in Haven Pubs.
-- After running this script, always review Haven pubs to be sure that your issue was created properly, and that all articles and the TOC are in DRAFT mode.
+- This script will insert the articles into Harbor, and once all of the articles are in place, it will create the TOCs that tie them together into an issue in Harbor Pubs.
+- After running this script, always review Harbor pubs to be sure that your issue was created properly, and that all articles and the TOC are in DRAFT mode.
 
 ### Import Images into Wordpress
 

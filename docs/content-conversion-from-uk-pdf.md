@@ -27,25 +27,25 @@ Run **pdftohtml** on the PDF file to create interim HTML versions of every page 
 - Your destination folder should contain an HTML file and a PNG file for every page, as well as an index.html file.
 - FTP to the XYZ production website, and navigate to the /wp-content/uploads/pre-import-images/xyz-uk-pdf-html/ folder.
 
-Create a new folder with the year and month of your new issue; ie: /2019_01/
+Create a new folder with the year and month of your new issue; ie: **/2019_01/**
 
 Copy your newly created HTML and PNG files to this folder.
 
 In your browser, run **xyz-import-pdf.php** to import data from the PDF pages into the database.
 
-- **https://club.countryliving.com/wp-content/plugins/haven-helpers/xyz-import-pdf.php?vol=<year>&num=<month>**
+- **`https://club.countryliving.com/wp-content/plugins/harbor-helpers/xyz-import-pdf.php?vol=<year>&num=<month>`**
 - The vol and num values must be set properly to import the data.
 - The data is imported into the temp_xyz_pdf table in the database.
 
 The next step is to denote which pages of the PDF contain content, and which contain ads; the **PDF Ads** tool allows you to do this easily.
 
-- **https://club.countryliving.com/wp-content/plugins/haven-helpers/xyz-pdf-ads.php?year=<year>&month=<month>**
+- **`https://club.countryliving.com/wp-content/plugins/harbor-helpers/xyz-pdf-ads.php?year=<year>&month=<month>`**
 - Simply step through the issue and for each page click 'SKIP' for ads, or 'KEEP' for content. You can also click 'NEXT' if you'd like to review the page later.
 - The three buttons also have keyboard shortcuts; A (skip), S (keep), D (next);
 - The cover, masthead, all of the special advertising sections, and TOC fall into the 'SKIP' bin.
 
 ### Create Articles
-Once you've separated the wheat from the chaff, so to speak, you'll need to manually create the table of contents and import it into the **temp_xyz_pdf_toc** table. This will allow the page-by-page content in the **temp_xyz_pdf** table to be tied together into articles when we import it into Haven.
+Once you've separated the wheat from the chaff, so to speak, you'll need to manually create the table of contents and import it into the **temp_xyz_pdf_toc** table. This will allow the page-by-page content in the **temp_xyz_pdf** table to be tied together into articles when we import it into Harbor.
 
 - Open the issue PDF file and page through to the table of contents; it typically starts around page 5 or 6, and always consists of two pages.
 - In Excel, open a blank spreadsheet, you'll want to enter data into columns A through F in the following order: Year, Month, Section, Page, Title, Subheadline.
@@ -55,9 +55,7 @@ Once you've separated the wheat from the chaff, so to speak, you'll need to manu
 
 Once your Excel spreadsheet is complete, you'll need to get this data into the database. Paste the following formula into every cell in column G, the creates your SQL.
 
-```
 **="INSERT INTO temp_xyz_pdf_toc (volume, number, section, page, title, deck) VALUES ("&A1&", "&B1&", '"&C1&"', "&D1&", '"&SUBSTITUTE(E1,"'","\'")&"', '"&SUBSTITUTE(F1,"'","\'")&"');"**
-```
 
 Open your SQL program, and go to the XYZ production database.
 
@@ -73,15 +71,15 @@ SET p.title = t.title, p.subheadline = t.deck, p.section = t.section
 WHERE (p.title IS NULL) AND (p.subheadline IS NULL) AND (p.section IS NULL);
 ```
 
-### Insert Articles and TOC Data into Haven
+### Insert Articles and TOC Data into Harbor
 
-It's time to insert the articles into Haven, you do this by running **xyz-create-tocs-from-pdf.php** in a browser.
+It's time to insert the articles into Harbor, you do this by running **xyz-create-tocs-from-pdf.php** in a browser.
 
-- **https://club.countryliving.com/wp-content/plugins/haven-helpers/xyz-create-tocs-from-pdf.php?volume=<volume>&number=<number>**
+- **`https://club.countryliving.com/wp-content/plugins/harbor-helpers/xyz-create-tocs-from-pdf.php?volume=<volume>&number=<number>`**
 - The link above will only do a test run. To do a final run, add &run=true to the end of the URL.
-- This script will add the raw text for all of your articles to Haven in draft mode, and create your TOC in Haven Pubs, also as a draft.
+- This script will add the raw text for all of your articles to Harbor in draft mode, and create your TOC in Harbor Pubs, also as a draft.
 
-Check Haven Pubs to be sure that you only created a single copy of the TOC, and that all of your articles have been added properly. When adding many issues I noticed that occasionally caching would somehow cause the script to run a few articles a second time, and create a second TOC in Haven Pubs. I didn't see the issue when creating a single issue, but if this happens you should be able to safely delete the duplicates.
+Check Harbor Pubs to be sure that you only created a single copy of the TOC, and that all of your articles have been added properly. When adding many issues I noticed that occasionally caching would somehow cause the script to run a few articles a second time, and create a second TOC in Harbor Pubs. I didn't see the issue when creating a single issue, but if this happens you should be able to safely delete the duplicates.
 
 ### Extract and Upload Images
 
@@ -119,7 +117,7 @@ Go get a sandwich, this is going to take a while.
 
 When this is done, you will have a few thousand images in that folder. Run **ls** in the Terminal window and watch them scroll by.
 
-Note that we used the -j switch in pdfimages, which attempts to export files in JPG format, but many of the files will remain in the PDF-specific PBM, PPM, and PGM formats. Generally you can just delete these as they are mostly useless for our purposes. That being said, there might be a few images in the PPM format that are worth saving. If you're feeling up to it you can view the images in Adobe Bridge or some other equivalent software and check them for yourself. I did find that sometimes these images needed to be stitched back together before they could be used. For example a full page image might be broken into ten smaller images. Anyway, it may not be worth your time, but you will need to make that judgement on a case-by-case basis. If you do find a PPM that is worth saving, be sure to save it as a JPG Nevertheless, as a rule of thumb on newer PDF files you can probably delete 99.9% of the images that are not in JPG format.
+Note that we used the -j switch in pdfimages, which attempts to export files in JPG format, but many of the files will remain in the PDF-specific PBM, PPM, and PGM formats. Generally you can just delete these as they are mostly useless for our purposes. That being said, there might be a few images in the PPM format that are worth saving. If you're feeling up to it you can view the images in Adobe Bridge or some other equivalent software and check them for yourself. I did find that sometimes these images needed to be stitched back together before they could be used. For example a full page image might be broken into ten smaller images. Anyway, it may not be worth your time, but you will need to make that judgement on a case-by-case basis. If you do find a PPM that is worth saving, be sure to save it as a JPG. Nevertheless, as a rule of thumb on newer PDF files you can probably delete 99.9% of the images that are not in JPG format.
 
 Open your FTP program and copy all of your new JPG files to the /uploads/pre-import-images/xyz-uk-images/ folder on the XYZ production server.
 
@@ -142,25 +140,23 @@ Now, back in Excel, open **jpglist.txt**. We're going to generate some more SQL.
 
 Now we'll actually generate our SQL. Into every cell in the new column F, past the following formula:
 
-```
-="INSERT INTO temp_xyz_pdf_img (volume, number, maybe_post_id, page, filename) VALUES ("&B1&", "&C1&", "&D1&", "&E1&", '"&A1&"');"
-```
+**="INSERT INTO temp_xyz_pdf_img (volume, number, maybe_post_id, page, filename) VALUES ("&B1&", "&C1&", "&D1&", "&E1&", '"&A1&"');"**
 
 Column F now contains the valid SQL that will insert the images into the temp_xyz_pdf_img table.
 
 Copy all of this SQL into the editor window in your SQL program and run all of the queries.
 
-**You're done. You've successfully imported all of the data and images from the PDF file into Haven.**
+**You're done. You've successfully imported all of the data and images from the PDF file into Harbor.**
 
 ### Correlate Images and Format Posts
 
-Well... okay, you're not really done. The data and images are in Haven, but they remain to be correlated and formatted.
+Well... okay, you're not really done. The data and images are in Harbor, but they remain to be correlated and formatted.
 
 The correlation tool for the UK issues can be found here.
 
-- **https://club.countryliving.com/wp-content/plugins/haven-helpers/xyz-correlate-uk.php**
+- **https://club.countryliving.com/wp-content/plugins/harbor-helpers/xyz-correlate-uk.php**
 
-Unlike the correlation tool for the US issues, where all of the images are imported directly into Haven, this tool is has a two step process where the images need to be selected and imported into Haven before they can be inserted into the posts or attached as the featured image. This is due to the higher number of useless images found in the PDF exports.
+Unlike the correlation tool for the US issues, where all of the images are imported directly into Harbor, this tool is has a two step process where the images need to be selected and imported into Harbor before they can be inserted into the posts or attached as the featured image. This is due to the higher number of useless images found in the PDF exports.
 
 Article formatting can also involve more work than it would with the US issues, since all of the content is simply extracted from the PDF and contains no intelligence or metadata whatsoever.
 
