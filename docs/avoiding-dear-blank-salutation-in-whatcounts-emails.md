@@ -1,4 +1,4 @@
-# Avoiding "Dear /<blank/>" salutation in Whatcounts emails
+# Avoiding "Dear (blank)" salutation in Whatcounts emails
 
 While most Harbor sites require a first and last name when registering, there are still many cases of subscribers getting into our database without that information, such as imported or initial user data. In these cases, we can avoid sending emails to Dear , but making a simple change to the Template file stored on the Whatcounts server.
 
