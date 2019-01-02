@@ -13,7 +13,7 @@ Here is the code which accomplishes this...
 
 
 
-```
+```php
 // LOAD WORDPRESS
 $root = dirname(dirname(dirname(dirname(__FILE__))));
 require_once($root . '/wp-load.php');
@@ -42,7 +42,7 @@ It should be noted that the crons using the code above will work just fine witho
 
 To allow your script to be triggered in a browser, visit Haven Settings and scroll down to the TEST_CRONS row (the variables are listed alphabetically). Click the button labeled TRUE and then click SAVE CHANGES.
 
-!(https://github.com/mwendell/code_samples/blob/master/docs/images/development_of_cron_jobs_a.gif "Screenshot")
+![alt text](https://github.com/mwendell/code_samples/blob/master/docs/images/development_of_cron_jobs_a.gif "Screenshot")
 
 The system is now configure to allow all crons (well, all crons that are using this system) to be run manually from within a browser. If you are curious about what the URL you need to enter into the browser for the cron in question, you can visit the list of Manual Cronjob Links. This list will give you the proper link to enter in the browser for any Haven/Mequoda cron.
 
@@ -55,7 +55,7 @@ Some crons should never allow themselves to be triggered manually. In these case
 In this case, the code at the head of the script is simpler, the relevant part looks like this... 
 
 
-```
+```php
 // DECIDE IF WE CAN RUN OUR CRON
 if (php_sapi_name() == 'cli') {
 
