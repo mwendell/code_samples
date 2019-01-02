@@ -1,2 +1,5 @@
 # code_samples
-Public working directory of example code and documentation.
+Examples of code and documentation.
+
+- [Documentation Examples](https://github.com/mwendell/code_samples/tree/master/docs)
+- Code Samples coming soon.
