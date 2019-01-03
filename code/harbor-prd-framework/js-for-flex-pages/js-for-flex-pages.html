@@ -1,0 +1,104 @@
+<!-- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+<!-- CURRENT FINAL VERBOSE - POST JSON NO GIFTS, WITH URL SWITCHING -->
+<script>
+    jQuery(document).ready(function(){
+        var mydata = { 'custno' : '@@CUSTNO', 'email' : '@@EMAIL', 'firstname' : '@@FIRSTNAME', 'lastname' : '@@LASTNAME', 'address1' : '@@ADDRESS1', 'address2' : '@@ADDRESS2', 'city' : '@@CITY', 'state' : '@@STATE', 'zip' : '@@ZIP', 'country' : '@@COUNTRY', 'copyright' : '@@COPYRIGHT', 'currentyear' : '@@CURRENTYEAR', 'keycode' : '@@KEYCODE', 'suborder' : '@@SUBORDER', 'subtype' : '@@SUBTYPE', 'transid' : '@@TRANSID', 'subtotal' : '@@SUBTOTAL', 'shipping' : '@@SHIPPING', 'tax' : '@@TAX', 'ordertotal' : '@@ORDERTOTAL', 'amtdue' : '@@AMTDUE', 'hbsc' : 'W', 'uid' : '0' };
+        var dev = '';
+        var url = window.location.href;
+        var hashes = url.slice(url.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            switch (hash[0]) {
+                case 'dev': dev = 'dev.'; break;
+                case 'hbsc': mydata.hbsc = hash[1]; break;
+                case 'uid': mydata.uid = hash[1]; break;
+            }
+        }
+        var ajaxURL = 'https://' + dev + 'harbor.com/wp-content/plugins/harbor-prd/ajax-xyz.php';
+        jQuery.ajax({
+            url: ajaxURL,
+            type: 'POST',
+            crossDomain: true,
+            data: { 'order' : mydata },
+            dataType: 'json',
+            success:function(data) {
+                var q = '?order=' + data.user + '-' + data.order;
+                location.href='http://' + dev + 'harbor.com/subscription-confirmation/' + q;
+            },
+            error:function(xhr, status, error){
+                alert( "There was an error updating/creating the user/order data on the XYZ website." );
+            }
+        });
+    })
+</script>
+
+<!-- CURRENT FINAL CODE !!! -->
+<script>jQuery(document).ready(function(){for(var e={custno:"@@CUSTNO",email:"@@EMAIL",firstname:"@@FIRSTNAME",lastname:"@@LASTNAME",address1:"@@ADDRESS1",address2:"@@ADDRESS2",city:"@@CITY",state:"@@STATE",zip:"@@ZIP",country:"@@COUNTRY",copyright:"@@COPYRIGHT",currentyear:"@@CURRENTYEAR",keycode:"@@KEYCODE",suborder:"@@SUBORDER",subtype:"@@SUBTYPE",transid:"@@TRANSID",subtotal:"@@SUBTOTAL",shipping:"@@SHIPPING",tax:"@@TAX",ordertotal:"@@ORDERTOTAL",amtdue:"@@AMTDUE",hbsc:"",uid:"0"},r="",t=window.location.href,a=t.slice(t.indexOf("?")+1).split("&"),s=0;s<a.length;s++)switch(hash=a[s].split("="),hash[0]){case"dev":r="dev.";break;case"hbsc":e.hbsc=hash[1];break;case"uid":e.uid=hash[1]}var n="https://"+r+"harbor.com/wp-content/plugins/harbor-prd/ajax-xyz.php";jQuery.ajax({url:n,type:"POST",crossDomain:!0,data:{order:e},dataType:"json",success:function(e){var t="?order="+e.user+"-"+e.order;location.href="http://"+r+"harbor.com/subscription-confirmation/"+t},error:function(e,r,t){alert("There was an error updating/creating the user/order data on the XYZ website.")}})});</script>
+
+<!-- AS PASTED INTO CAN FLEXPAGES -->
+<script>jQuery(document).ready(function(){for(var e={custno:"@@CUSTNO",email:"@@EMAIL",firstname:"@@FIRSTNAME",lastname:"@@LASTNAME",address1:"@@ADDRESS1",address2:"@@ADDRESS2",city:"@@CITY",state:"@@STATE",zip:"@@ZIP",country:"@@COUNTRY",copyright:"@@COPYRIGHT",currentyear:"@@CURRENTYEAR",keycode:"@@KEYCODE",suborder:"@@SUBORDER",subtype:"@@SUBTYPE",transid:"@@TRANSID",subtotal:"@@SUBTOTAL",shipping:"@@SHIPPING",tax:"@@TAX",ordertotal:"@@ORDERTOTAL",amtdue:"@@AMTDUE",hbsc:"",uid:"0"},r="",t=window.location.href,a=t.slice(t.indexOf("?")+1).split("&"),s=0;s<a.length;s++)switch(hash=a[s].split("="),hash[0]){case"dev":r="dev.";break;case"hbsc":e.hbsc=hash[1];break;case"uid":e.uid=hash[1]}var n="https://"+r+"ceramicartsnetwork.org/wp-content/plugins/harbor-prd/ajax-flexpages.php";jQuery.ajax({url:n,type:"POST",crossDomain:!0,data:{order:e},dataType:"json",success:function(e){var t="?order="+e.user+"-"+e.order;location.href="http://"+r+"ceramicartsnetwork.org/subscription-confirmation/"+t},error:function(e,r,t){alert("There was an error communicating with the Ceramic Arts website.")}})});</script>
+
+<!-- FUTURE VERSION? use &dev=dev or &dev=stg instead of &dev=1 in test URL. not tested.-->
+<script>jQuery(document).ready(function(){for(var e={custno:"@@CUSTNO",email:"@@EMAIL",firstname:"@@FIRSTNAME",lastname:"@@LASTNAME",address1:"@@ADDRESS1",address2:"@@ADDRESS2",city:"@@CITY",state:"@@STATE",zip:"@@ZIP",country:"@@COUNTRY",copyright:"@@COPYRIGHT",currentyear:"@@CURRENTYEAR",keycode:"@@KEYCODE",suborder:"@@SUBORDER",subtype:"@@SUBTYPE",transid:"@@TRANSID",subtotal:"@@SUBTOTAL",shipping:"@@SHIPPING",tax:"@@TAX",ordertotal:"@@ORDERTOTAL",amtdue:"@@AMTDUE",hbsc:"",uid:"0"},r="",t=window.location.href,a=t.slice(t.indexOf("?")+1).split("&"),s=0;s<a.length;s++)switch(hash=a[s].split("="),hash[0]){case"dev":r=hash[1]+".";break;case"hbsc":e.hbsc=hash[1];break;case"uid":e.uid=hash[1]}var n="https://"+r+"ceramicartsnetwork.org/wp-content/plugins/harbor-prd/ajax-flexpages.php";jQuery.ajax({url:n,type:"POST",crossDomain:!0,data:{order:e},dataType:"json",success:function(e){var t="?order="+e.user+"-"+e.order;location.href="http://"+r+"ceramicartsnetwork.org/subscription-confirmation/"+t},error:function(e,r,t){alert("There was an error communicating with the Ceramic Arts website.")}})});</script>
+
+<!-- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+<!-- WRITE EMAIL TO EMAIL FIELD ON ORDER FORM -->
+<script>
+    jQuery(document).ready(function(){
+        var email = false;
+        var url = window.location.href;
+        var hashes = url.slice(url.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            if (hash[0] == 'em') {
+                email = decodeURIComponent(hash[1]);
+            }
+        }
+        if (email) { jQuery('#email').val(email); }
+    })
+</script>
+
+<script>jQuery(document).ready(function(){for(var e=!1,n=window.location.href,o=n.slice(n.indexOf("?")+1).split("&"),a=0;a<o.length;a++)hash=o[a].split("="),"em"==hash[0]&&(e=decodeURIComponent(hash[1]));e&&jQuery("#email").val(e)});</script>
+
+
+<!-- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+
+<!-- GET JSONP NO GIFTS, WITH URL SWITCHING -->
+<script>
+    jQuery(document).ready(function(){
+        var mydata = { 'custno' : '@@CUSTNO', 'email' : '@@EMAIL', 'firstname' : '@@FIRSTNAME', 'lastname' : '@@LASTNAME', 'address1' : '@@ADDRESS1', 'address2' : '@@ADDRESS2', 'city' : '@@CITY', 'state' : '@@STATE', 'zip' : '@@ZIP', 'country' : '@@COUNTRY', 'copyright' : '@@COPYRIGHT', 'currentyear' : '@@CURRENTYEAR', 'keycode' : '@@KEYCODE', 'suborder' : '@@SUBORDER', 'subtype' : '@@SUBTYPE', 'transid' : '@@TRANSID', 'subtotal' : '@@SUBTOTAL', 'shipping' : '@@SHIPPING', 'tax' : '@@TAX', 'ordertotal' : '@@ORDERTOTAL', 'amtdue' : '@@AMTDUE' };
+        var dev = '';
+        var url = window.location.href;
+        var hashes = url.slice(url.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            if (hash[0] == 'testmode') {
+                dev = 'dev.'
+            } else if (hash(0) == 'hbsc') {
+                mydata.hbsc = hash(1);
+            }
+        }
+        var ajaxURL = 'https://' + dev + 'harbor.com/wp-content/plugins/harbor-prd/ajax-xyz-jsonp.php?callback=?';
+        jQuery.ajax({
+            url: ajaxURL,
+            type: 'POST',
+            crossDomain: true,
+            data: { 'order' : mydata },
+            dataType: 'jsonp',
+            success:function(data) {
+                var q = '?order=' + data.user + '-' + data.order;
+                location.href='http://' + dev + 'harbor.com/subscription-confirmation/' + q;
+            },
+            error:function(xhr, status, error){
+                alert( "There was an error updating/creating the user/order data on the XYZ website.\n\n1: " + status + "\n\n2: " + error + "\n\n3: " + xhr  );
+            }
+        });
+    })
+</script>
+
+<script>
+    jQuery(document).ready(function(){var e={custno:"@@CUSTNO",email:"@@EMAIL",firstname:"@@FIRSTNAME",lastname:"@@LASTNAME",address1:"@@ADDRESS1",address2:"@@ADDRESS2",city:"@@CITY",state:"@@STATE",zip:"@@ZIP",country:"@@COUNTRY",copyright:"@@COPYRIGHT",currentyear:"@@CURRENTYEAR",keycode:"@@KEYCODE",suborder:"@@SUBORDER",subtype:"@@SUBTYPE",transid:"@@TRANSID",subtotal:"@@SUBTOTAL",shipping:"@@SHIPPING",tax:"@@TAX",ordertotal:"@@ORDERTOTAL",amtdue:"@@AMTDUE"},t="https://dev.harbor.com/wp-content/plugins/harbor-prd/ajax-xyz.php?callback=?";jQuery.ajax({url:t,type:"POST",crossDomain:!0,data:{order:e},dataType:"jsonp",success:function(e){var t="?order="+e.user+"-"+e.order;location.href="http://dev.harbor.com/subscription-confirmation/"+t},error:function(e,t,r){alert("There was an error updating/creating the user/order data on the XYZ website.")}})});
+</script>

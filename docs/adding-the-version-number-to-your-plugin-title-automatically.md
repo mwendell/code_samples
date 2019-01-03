@@ -6,19 +6,19 @@ First, let's take a quick look at the plugin's title definition block, as refere
 
 ```php
 /**
-* Plugin Name: Haven Stock Manager
-* Plugin URI: http://www.mequoda.com/
-* Description: Plugin in development
+* Plugin Name: Harbor Stock Manager
+* Plugin URI: http://www.kwyjibo.com/
+* Description: Manage Stock Recommendation Pages
 * Version: 0.07
-* Author: Mequoda
-* Author URI: http://www.mequoda.com
+* Author: Michael Wendell
+* Author URI: http://www.kwyjibo.com
 */
 ```
 
 Assuming our plugin is not headless, then somewhere within the plugin we will have a page title. For many plugins this will be a hard-coded title like this..
 
 ```php
-echo <h2>Haven Stock Manager</h2>;
+echo <h2>Harbor Stock Manager</h2>;
 ```
 
 You could simply add the plugin version by typing it in, but that's a bad idea as we will continually forget to update it. If that was the only option it would probably better not to include it at all. Similarly, when plugin names change, which they have been wont to do lately, we must remember to change the name in this block as well. This code helps with that too.
