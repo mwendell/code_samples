@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Subscription entitlement management plugin
  * Version: 0.2.18
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */

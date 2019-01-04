@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com/
  * Description: A Plugin that shows text ads inside a post.
  * Version: 0.5
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */

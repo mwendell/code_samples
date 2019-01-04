@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Automatic Scheduled Post Tagging
  * Version: 1.43
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://kwyjibo.com
  */

@@ -36,7 +36,7 @@ $ip = $_SERVER['REMOTE_ADDR'];
 $ip_array = explode('.', $ip);
 $short_ip = $ip_array[0].'.'.$ip_array[1].'.'.$ip_array[2];
 
-$proceed = ($short_ip == '69.165.42' || $ip == '71.61.185.159' || $ip == '127.0.0.1' || $ip == '24.113.229.9' /*bob*/) ? true : false;
+$proceed = ($short_ip == '127.0.0' || $ip == '127.0.0.1') ? true : false;
 
 // record every transaction
 global $wpdb;
@@ -59,7 +59,7 @@ $test_mode = ($_POST['TEST_MODE'] == 'true') ? true : false;
 
 $error = array();
 
-if (($user == 'prd-Ls5YMKtCRpxA' && $pass == '5t2VxrAYpJ44Qkm2') || ($user == 'W4QFxguwzRMYLPcG' && $pass == '5t2VxrAYpJ44Qkm2')) {
+if (($user == 'prd-user' && $pass == 'replace-password') || ($user == 'test-user' && $pass == 'replace-password')) {
 	$proceed = true;
 } else {
 	$error['credentials'] = 'error';
@@ -105,14 +105,6 @@ if ($proceed) {
 			case 'CMWEB': break;
 			case 'CMTAB': break;
 			case 'CMALL': break;
-			case 'CMINT': break;
-			case 'BPPRT': break;
-			case 'BPWEB': break;
-			case 'BPTAB': break;
-			case 'BPALL': break;
-			case 'BPINT': break;
-			case 'DGPRT': break;
-			case 'SMPRT': break;
 			case 'SHOPP': $recur = false; $proceed = false; break;
 			case 'TRMNL': $recur = false; $proceed = false; break;
 			default:
@@ -182,14 +174,5 @@ if ($test_mode || $error_notify) {
 	$message .= print_r($response, true);
 
 	dmail('CSN PRD Listener', $message);
-
-	if ($error_notify) {
-		mail('mwndll@gmail.com', 'PRD Listener Error', $message);
-	}
-
-	if ($user == 'prd-Ls5YMKtCRpxA') {
-		mail('errors@prdinternal.com', 'CSN Harbor Listener Test Activity', $message);
-		mail('mwndll@gmail.com', 'PRD is testing the CSN listener', $message);
-	}
 
 }

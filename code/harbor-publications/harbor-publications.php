@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com/
  * Description: Allows the creation of the table of contents pages for individual issues within a publication.
  * Version: 0.86
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */
@@ -448,16 +449,6 @@ class harborPubs {
 							JOIN wp_term_relationships r ON p.ID = r.object_id
 							JOIN wp_term_taxonomy x ON r.term_taxonomy_id = x.term_taxonomy_id AND x.term_id = %d
 							WHERE (post_type = 'toc');", $this_term_id));
-
-					if ($this_term_id && $post_count < 1) { /*
-							$wpdb->query($wpdb->prepare("DELETE FROM wp_termmeta WHERE (term_id = %d)", $this_term_id));
-							$term_taxonomy_id = $wpdb->get_var($wpdb->prepare("SELECT term_taxonomy_id FROM wp_term_taxonomy WHERE (term_id = %d) AND (taxonomy = 'publication')", $this_term_id));
-							if ($term_taxonomy_id) {
-								$wpdb->query($wpdb->prepare("DELETE FROM wp_term_relationships WHERE (term_taxonomy_id = %d)", $term_taxonomy_id));
-							}
-							$wpdb->query($wpdb->prepare("DELETE FROM wp_term_taxonomy WHERE (term_id = %d)", $this_term_id));
-							$wpdb->query($wpdb->prepare("DELETE FROM wp_terms WHERE (term_id = %d)", $this_term_id)); */
-					}
 				}
 			}
 
@@ -532,8 +523,6 @@ class harborPubs {
 				foreach($edit_pub_errors as $a) { echo '<p>'.$a.'</p>'; }
 				echo '</div>';
 			}
-
-			//echo '<pre>'.print_r($edit,1).'</pre>';
 
 			echo "<form method='post' action='/wp-admin/admin.php?page=harbor_pubs_manage' class='pub-form'>";
 
@@ -1161,7 +1150,6 @@ class harborPubs {
 										<h3 class="hndle"><span>Issue PDF</span></h3>
 										<div class="inside">
 											<?php
-											//$dir = dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/private/products/';
 											if ($toc_issue_pdf) {
 												echo '<p>Current File:<br/>';
 												echo '<a href="' . DOWNLOAD_PATH . $toc_issue_pdf . '" target="_blank"><b>' . mb_strimwidth($toc_issue_pdf, 0, 35, '...') . '</b></a></p>';
@@ -1485,7 +1473,6 @@ class harborPubs {
 
 					} else {
 
-						// $wpdb->query($wpdb->prepare("UPDATE wp_posts SET post_title = %s, post_name = %s, post_status = %s, post_content = %s, post_date = NOW(), post_date_gmt = NOW() - INTERVAL 5 HOUR WHERE (ID = %d);", $post_title, $post_slug, $post_status, $post_content, $post_id));
 						// Following updates TOC post with wp_update_post() instead of db query
 						$post = array(
 							'ID'				=> $post_id,
@@ -1676,40 +1663,18 @@ class harborPubs {
 				echo "<input type='hidden' name='harbor_pubs[channels]' id='channels_hidden' value='".stripslashes($harbor_pubs_options['channels'])."'>";
 
 			}
-			// else {
-
-			//	echo '<tr valign="top">';
-			//	echo '<th scope="row"><label for="harbor_pubs_annual_accordion">Available Channels</label></th>';
-			//	echo '<td>no channels set yet';
-			//	echo '</td>';
-			//	echo '</tr>';
-			//}
 
 			echo '<tr valign="top">';
 			echo '<th scope="row"><label for="harbor_pubs_pub_accordion">Use Publication Accordion</label></th>';
 			echo '<td>Coming Soon';
-			/*echo '<label><input type="radio" name="harbor_pubs[volnum]" value="1" ';
-			if ($harbor_pubs_options['volnum'] == '1') { echo 'checked'; }
-			echo '/>&nbsp;Show Issue Volume & Number</label><br/>';
-			echo '<label><input type="radio" name="harbor_pubs[volnum]" value="0" ';
-			if ($harbor_pubs_options['volnum'] == '0') { echo 'checked'; }
-			echo '/>&nbsp;Hide Issue Volume & Number</label><br/>';*/
 			echo '</td>';
 			echo '</tr>';
 
 			echo '<tr valign="top">';
 			echo '<th scope="row"><label for="harbor_pubs_annual_accordion">Use Annual Accordion</label></th>';
 			echo '<td>Coming Soon';
-			/*echo '<label><input type="radio" name="harbor_pubs[volnum]" value="1" ';
-			if ($harbor_pubs_options['volnum'] == '1') { echo 'checked'; }
-			echo '/>&nbsp;Show Issue Volume & Number</label><br/>';
-			echo '<label><input type="radio" name="harbor_pubs[volnum]" value="0" ';
-			if ($harbor_pubs_options['volnum'] == '0') { echo 'checked'; }
-			echo '/>&nbsp;Hide Issue Volume & Number</label><br/>';*/
 			echo '</td>';
 			echo '</tr>';
-
-			//echo '<pre>'.print_r($harbor_pubs_options, 1).'</pre>';
 
 			echo '</table>';
 			echo '<p class="submit"><input type="submit" name="Submit" class="button button-primary" value="'.__('Update Options &raquo;', 'harbor-prd').'" /></p>';
@@ -1964,7 +1929,6 @@ $harborPubs = new harborPubs();
 		global $wpdb;
 		$covers = array();
 		foreach ($prefixes as $p) {
-			//$p = strtolower(ctype_alpha(substr($p,0,2)));
 			$sql = "SELECT m.meta_value FROM wp_posts p ";
 			if ($urls) {
 				$sql .= "JOIN wp_postmeta i ON p.ID = i.post_id AND i.meta_key = '_thumbnail_id' ";

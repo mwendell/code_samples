@@ -154,13 +154,6 @@ $order = array();
 		$user_id = $current_user->ID;
 	}
 
-	/*
-	echo '<pre>';
-	print_r($order);
-	print_r($cart);
-	echo '</pre>';
-	*/
-
 // UPDATE ADDRESS INFO
 	update_user_meta($user_id, 'address', $user['add1']);
 	update_user_meta($user_id, 'address2', $user['add2']);
@@ -177,8 +170,6 @@ $order = array();
 	update_user_meta($user_id, 'order_'.$now.'_keycode', $cart['key_code']);
 
 // SEND CONFIRMATION EMAIL
-
-	// foreach ($cart as $key => $c) {
 
 	$key = 0;
 	$c = $cart[$key];
@@ -203,8 +194,6 @@ $order = array();
 			$channel = ($c->access_level) ? $default_channels[$c->access_level] : 'web';
 		}
 	}
-
-	// foreach ($product as $pk => $p) {
 
 	$pk = 0;
 	$p = $product[$pk];
@@ -260,8 +249,6 @@ $order = array();
 		}
 	}
 
-	// if ($pub_id) {
-
 	$pub_name = get_pub_title($pub_id);
 
 	$price = 0;
@@ -305,12 +292,6 @@ $order = array();
 	}
 	$ordersummary .= "<tr style='border-top: 1px solid #666666'><td colspan=2 align='right'>Total: </td><td align='right'' style='padding-right: 10px; width: 10%;'>$".number_format($total,2)."</td></tr>";
 	$ordersummary .= "</table>";
-
-	// } // if $pub_id
-
-	// } // foreach $product
-
-	// } // foreach $cart
 
 	$email_slug = "purchase-confirmation-".strtolower($keycode);
 	$body = $wpdb->get_var("SELECT post_content FROM wp_posts WHERE (post_name = '".$email_slug."') AND (post_type = 'harbor_confirm_email')");
@@ -382,10 +363,6 @@ $order = array();
 				default:
 					$wc[$wc_pub.'_web'] = array($expire_date_wc, 'string');
 					break;
-			}
-
-			if ($debug) {
-				//mail($internal_debug_email, 'FLEXPAGE WHATCOUNTS', "CHNL: ".$channel."\r\nWC ARRAY:\r\n".print_r($wc,1)."\r\nENTITLEMENTS ARRAY:\r\n".print_r($entitlements,1)."\r\nORDER ARRAY:\r\n".print_r($order,1)."\r\n\r\nSent by page-offsite-order-process.php");
 			}
 
 			if (!empty($wc)) {

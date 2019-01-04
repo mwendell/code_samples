@@ -4,14 +4,9 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Display download and purchase habits for individual user.
  * Version: 0.7
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
- */
-
-/**
- * harborProfileManager is the class that handles ALL of the plugin functionality.
- * It helps us avoid name collisions
- * http://codex.wordpress.org/Writing_a_Plugin#Avoiding_Function_Name_Collisions
  */
 
 class harborProfileManager {
@@ -90,7 +85,7 @@ function my_action_javascript() { ?>
 	<script type="text/javascript" >
 	jQuery(document).ready(function($) {
 		jQuery('#searchform').submit(function(e){
-	        e.preventDefault();
+			e.preventDefault();
 			jQuery('#searchstatus').html('Searching...');
 			var q = jQuery('#userquery').val();
 			if (q.length > 1) {
@@ -173,20 +168,6 @@ function my_action_callback() {
 
 	$q = $_POST["whatever"];
 
-	/*$query = "SELECT u.ID, u.user_email AS email, f.meta_value AS first, l.meta_value AS last
-			FROM wp_users u
-			JOIN wp_usermeta f ON u.ID = f.user_id AND f.meta_key = 'first_name'
-			JOIN wp_usermeta l ON u.ID = l.user_id AND l.meta_key = 'last_name'
-			WHERE
-			(u.ID = '".$q."') OR
-			(u.user_email LIKE '%".$q."%') OR
-			(u.user_nicename LIKE '%".$q."%') OR
-			(u.display_name LIKE '%".$q."%') OR
-			(f.meta_value LIKE '%".$q."%') OR
-			(l.meta_value LIKE '%".$q."%')
-			ORDER BY last, first, email;";*/
-
-	// MUCH FASTER
 	$query = "SELECT u.ID, u.user_email AS email, f.meta_value AS first, l.meta_value AS last
 			FROM wp_users u
 			JOIN wp_usermeta f ON u.ID = f.user_id AND f.meta_key = 'first_name'
@@ -231,8 +212,6 @@ function other_action_callback() {
 				ORDER BY t.dt DESC;";
 	}
 
-	//m.first_name, m.last_name, m.phone, m.address, m.address2, m.city, m.state, m.zip_code, m.country, m.sub_email_newsletter, m.sub_week_in_review, m.sub_publisher_spotlight, m.confirm_token
-
 	$results = $wpdb->get_results($query);
 
 	$filtered = array();
@@ -248,7 +227,7 @@ function other_action_callback() {
 		$filtered[$key]['asid'] = $r->asid;
 		$filtered[$key]['date'] = $r->date;
 		$filtered[$key]['type'] = $r->type;
-	}/**/
+	}
 
 	echo json_encode($filtered);
 	die();

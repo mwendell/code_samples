@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Register user in Harbor via AJAX call
  * Version: 0.2.7
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */

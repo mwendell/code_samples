@@ -257,18 +257,6 @@ class harborSponsors {
 
 			echo '<hr/>';
 
-			/*
-			$sql = "SELECT t.term_id, t.name, t.slug, x.description, m1.meta_value AS sponsor_url, m2.meta_value AS sponsor_logo, m3.meta_value AS active
-				FROM wp_terms t
-				JOIN wp_term_taxonomy x ON t.term_id = x.term_id AND x.taxonomy = 'sponsor'
-				LEFT JOIN wp_termmeta m1 ON t.term_id = m1.term_id AND m1.meta_key = 'sponsor_url'
-				LEFT JOIN wp_termmeta m2 ON t.term_id = m2.term_id AND m2.meta_key = 'sponsor_logo'
-				LEFT JOIN wp_termmeta m3 ON t.term_id = m3.term_id AND m3.meta_key = 'active'
-				ORDER BY name;";
-
-			$results = $wpdb->get_results($sql, ARRAY_A);
-			*/
-
 			$results = get_terms( array( 'taxonomy' => 'sponsor', 'hide_empty' => false, 'count' => true ) );
 
 			$edit = array(
@@ -420,8 +408,6 @@ class harborSponsors {
 			}
 
 			$options = get_option('harbor_sponsors');
-
-			//print_r($options);
 
 			echo '<div class="wrap">';
 			echo '<h1>'.__($plugin_data['Title']).' - Version '.__($plugin_data['Version']).'</h1>';

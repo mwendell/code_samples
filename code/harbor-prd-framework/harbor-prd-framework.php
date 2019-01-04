@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: Harbor PRD Framework
+ * Plugin URI: http://www.kwyjibo.com
  * Description: PRD Payment integration framework and admin interface
  * Version: 0.9.14
  * License: GPL
- * Text Domain: harbor-prd
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */

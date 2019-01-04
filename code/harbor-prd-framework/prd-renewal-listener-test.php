@@ -3,30 +3,16 @@
 
 <?php
 $ip = $_SERVER['REMOTE_ADDR'];
-if ($ip == '71.61.185.159') {
-	$USER = 'W4QFxguwzRMYLPcG';
-	$PASS = '5t2VxrAYpJ44Qkm2';
-	$ATTEMPT_CODE = 'A';
-	$ORIGINAL_SP_REF_ID = 'E3AEECD27517EFDEB30F403CB0BDE1AE';
-	$PRD_SP_REF_ID = 'TEST4AA7900C927F89DE6CE9DAD0487';
-	$PRD_CUSTOMER_ID = '86101200001';
-	$PRD_PRODUCT = 'BPPRT';
-	$PRD_TRANSACTION_AMOUNT = '2.99';
-	$PRD_CC_LAST = '9966';
-	$PRD_NEXT_CHARGE_DATE = '2016-12-06';
-	$TEST_MODE = 'false';
-} else {
-	$USER = '';
-	$PASS = '';
-	$ATTEMPT_CODE = '';
-	$ORIGINAL_SP_REF_ID = '';
-	$PRD_CUSTOMER_ID = '';
-	$PRD_PRODUCT = 'CMPRT';
-	$PRD_TRANSACTION_AMOUNT = '';
-	$PRD_CC_LAST = '';
-	$PRD_NEXT_CHARGE_DATE = '';
-	$TEST_MODE = 'checked';
-}
+$USER = '';
+$PASS = '';
+$ATTEMPT_CODE = '';
+$ORIGINAL_SP_REF_ID = '';
+$PRD_CUSTOMER_ID = '';
+$PRD_PRODUCT = '';
+$PRD_TRANSACTION_AMOUNT = '';
+$PRD_CC_LAST = '';
+$PRD_NEXT_CHARGE_DATE = '';
+$TEST_MODE = '';
 ?>
 
 <form method='post' action='https://harbor.com/wp-content/plugins/harboruoda-prd/prd-listener-csn.php'>

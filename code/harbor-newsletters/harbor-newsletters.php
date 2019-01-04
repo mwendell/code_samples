@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Create and launch automated newsletter campaigns based on site content
  * Version: 0.5
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */

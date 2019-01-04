@@ -4,6 +4,7 @@
  * Plugin URI: http://www.kwyjibo.com
  * Description: Gather and distribute leads based on free report download transactions
  * Version: 0.9.4
+ * License: GPL
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */
