@@ -117,9 +117,9 @@ There are a few other functions that were created before the plugin was develope
 
 First, note that Harbor Publication Manager takes advantage of the wp_termmeta table, and term meta functions, introduced in Wordpress 4.4. For projects using earlier versions of Wordpress (such as UHN) and wp_termmeta table has been manually added to the database and get_term_meta() and update_term_meta() functions have been conditionally added to the project (these functions are not used if Wordpress includes native functions of the same name). The added table and functions work exactly like those in WP 4.4 and core upgrades should work as if they were completely native.
 
-As of this writing (version 0.62), the plugin currently consists of a single file, harbor-publication-manager.php. The file consists of a plugin declaration comment and change log, followed by functions to register the ‘toc’ post type and the ‘publication’ taxonomy. After this, the mgPubs class is created, containing all of the functionality of the plugin, other than the helper functions. The helper functions exist at the end of the file, and outside of the mqPubs class.
+As of this writing (version 0.62), the plugin currently consists of a single file, harbor-publication-manager.php. The file consists of a plugin declaration comment and change log, followed by functions to register the ‘toc’ post type and the ‘publication’ taxonomy. After this, the mgPubs class is created, containing all of the functionality of the plugin, other than the helper functions. The helper functions exist at the end of the file, and outside of the harborPubs class.
 
-Within the mqPubs class sections are delineated for activation and setup, menu and options, select issue/edit pubs, edit issue, and options.
+Within the harborPubs class sections are delineated for activation and setup, menu and options, select issue/edit pubs, edit issue, and options.
 
 Activation and Setup consists of the standard functions used to define the plugin, options, actions, filters, and instantiate the class.
 
@@ -176,7 +176,7 @@ wp_postmeta table
 #### Plugin Options
 
 wp_options table
-- mq_pubs (serialized array)
+- harbor_pubs (serialized array)
 
   - \[featured\] radio/checkbox
   - \[sponsored\] 1/0

@@ -1,7 +1,7 @@
 # Documentation Examples
 
 ### API Discussion for Management
-- [How the site Interacts with PRD](../docs/how-site-interacts-with-prd.md)
+- [How the site Interacts with XPD](../docs/how-site-interacts-with-xpd.md)
 - [Implementing a PRD FlexPage Order Flow](../docs/implementing-a-prd-flexpage-order-flow.md)
 - [PRD FlexPages and Harbor](../docs/prd-flexpages-and-harbor.md)
 
