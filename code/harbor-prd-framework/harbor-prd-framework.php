@@ -2,17 +2,13 @@
 /**
  * Plugin Name: Harbor PRD Framework
  * Description: PRD Payment integration framework and admin interface
- * Version: 0.9.8
+ * Version: 0.9.14
  * License: GPL
  * Text Domain: harbor-prd
  * Author: Michael Wendell
  * Author URI: http://www.kwyjibo.com
  */
 
-/**
- * harborPRD is the class that handles ALL of the plugin functionality,
- * and helps us avoid name collisions
- */
 class harborPRD {
 
 // ------------------------------------------------------------------------
@@ -31,10 +27,10 @@ class harborPRD {
 	private function __construct() {
 
 		global $wpdb;
-		$this->_order_table = $wpdb->prefix . "harbor_orders";
-		$this->_offers_table = $wpdb->prefix . "harbor_offers";
-		$this->_transactions_table = $wpdb->prefix . "harbor_transactions";
-		$this->_transaction_types_table = $wpdb->prefix . "harbor_transaction_types";
+		$this->_order_table = $wpdb->prefix . "Harbor_orders";
+		$this->_offers_table = $wpdb->prefix . "Harbor_offers";
+		$this->_transactions_table = $wpdb->prefix . "Harbor_transactions";
+		$this->_transaction_types_table = $wpdb->prefix . "Harbor_transaction_types";
 
 		$this->_getSettings();
 
@@ -45,6 +41,8 @@ class harborPRD {
 
 		add_action('admin_init', array($this,'registerOptions'));
 		add_action('admin_menu', array($this,'adminMenu'));
+		add_action('profile_update', array($this,'customer_update'));
+
 		add_filter('init', array($this, 'init_locale'));
 	}
 
@@ -81,6 +79,20 @@ class harborPRD {
 		add_menu_page('PRD Terminal', 'PRD Terminal', 'manage_options', 'prd-terminal', array($this, 'terminal'));
 	}
 
+	public function is_prd_awake() {
+
+		$harbor_prd = get_option('harbor-prd');
+
+		if ( $harbor_prd['bypass_server_check'] ) { return true; }
+
+		$url = ( $harbor_prd['base_url'] ) ? trim( str_replace( 'https://', '', $harbor_prd['base_url'] ) ) : "69.165.42.21";
+
+		$fp = @fsockopen($url, 443, $errno, $errstr, 5);
+		if (!$fp) return false;
+		fclose($fp);
+		return true;
+	}
+
 // ------------------------------------------------------------------------
 // SETTINGS PAGE
 
@@ -92,6 +104,10 @@ class harborPRD {
 
 		echo '<div class="wrap">';
 		echo '<h1>'.__($plugin_data['Title']).' - Version '.__($plugin_data['Version']).'</h1>';
+
+		if ( ! $this->is_prd_awake() ) {
+			echo '<div class="error"><p><b>PRD SERVER PROBLEM</b><br/>The PRD API server is not responding to requests at the moment.</p></div>';
+		}
 
 		?>
 		<style>
@@ -341,6 +357,22 @@ class harborPRD {
 			'labels'		=> array('Active', 'Inactive'),
 			'values'		=> array('1', '0'),
 			),
+		'pull_userdata'	=> array(
+			'label'			=> 'Pull Address Info',
+			'help'			=> 'Pull subscriber contact and shipping changes from PRD to Harbor whenever Gatekeeper API is called.',
+			'default'		=> '0',
+			'type'			=> 'radio',
+			'labels'		=> array('Update customer data in Harbor on Gatekeeper calls', 'Do not use PRD data to update addresses in Harbor'),
+			'values'		=> array('1', '0'),
+			),
+		'push_userdata'	=> array(
+			'label'			=> 'Push Address Info',
+			'help'			=> 'Push subscriber contact and shipping changes from Harbor to PRD using the Subscriber Update API',
+			'default'		=> '0',
+			'type'			=> 'radio',
+			'labels'		=> array('Push changes made in Harbor to PRD', 'Do not send address changes to PRD'),
+			'values'		=> array('1', '0'),
+			),
 		'perpetuity'		=> array(
 			'label'			=> 'Define Perpetuity',
 			'help'			=> 'Enter the realistic product lifetime, in years, of perpetually entitled digital products.',
@@ -396,6 +428,14 @@ class harborPRD {
 			),
 		'header_50'			=> array(
 			'label'			=> 'Debug Settings',
+			),
+		'bypass_server_check'	=> array(
+			'label'		=> 'Pre-check API Availability',
+			'help'		=> 'Pre-checking API availability will incur a small performance penalty and should only be used when API outages are expected.',
+			'default'	=> '0',
+			'type'		=> 'radio',
+			'labels'	=> array('Ping API prior to all requests', 'Assume API is available <em>(default operation)</em>'),
+			'values'	=> array('1', '0'),
 			),
 		'test_mode'			=> array(
 			'label'			=> 'PRD Test Mode',
@@ -519,6 +559,12 @@ class harborPRD {
 			$refund = true;
 		}
 
+		if ( ! $message ) {
+			if ( ! $this->is_prd_awake() ) {
+				$message = '<div class="error"><p><b>PRD SERVER PROBLEM</b><br/>The PRD API server is not responding to requests at the moment.</p></div>';
+			}
+		}
+
 		?>
 
 		<style>
@@ -567,18 +613,11 @@ class harborPRD {
 					var zip = jQuery('#zip').val();
 					var country = jQuery('#country').val();
 					var keycode = jQuery('#keycode').val();
-					//var suborder = jQuery('#suborder').val();
-					//var subtype = jQuery('#subtype').val();
 					var transid = jQuery('#transid').val();
-					//var subtotal = jQuery('#subtotal').val();
-					//var shipping = jQuery('#shipping').val();
-					//var tax = jQuery('#tax').val();
-					//var ordertotal = jQuery('#ordertotal').val();
-					//var amtdue = jQuery('#amtdue').val();
-					var hbsc = jQuery('#hbsc').val();
+					var harborsc = jQuery('#harborsc').val();
 					var uid = jQuery('#uid').val();
 
-					var mydata = { 'custno' : custno, 'email' : email, 'firstname' : firstname, 'lastname' : lastname, 'address1' : address1, 'address2' : address2, 'city' : city, 'state' : state, 'zip' : zip, 'country' : country, 'keycode' : keycode, 'transid' : transid, 'hbsc' : hbsc, 'uid' : uid };
+					var mydata = { 'custno' : custno, 'email' : email, 'firstname' : firstname, 'lastname' : lastname, 'address1' : address1, 'address2' : address2, 'city' : city, 'state' : state, 'zip' : zip, 'country' : country, 'keycode' : keycode, 'transid' : transid, 'harborsc' : harborsc, 'uid' : uid };
 
 					var ajaxURL = '/wp-content/plugins/harbor-prd/ajax-flexpage.php';
 					jQuery.ajax({
@@ -750,7 +789,7 @@ class harborPRD {
 				echo "<p>The Refund Terminal may only be used to grant refunds for transactions placed on the Charge Terminal. To refund subscription orders or online Shopp orders please visit the customer's page under Users and refund the purchased product or subscription directly.</p>";
 
 				if ($search) {
-					$sql = "SELECT * FROM wp_harbor_orders WHERE (product_name LIKE 'TERMINAL PAYMENT') AND (RESULT = 1) ";
+					$sql = "SELECT * FROM wp_Harbor_orders WHERE (product_name LIKE 'TERMINAL PAYMENT') AND (RESULT = 1) ";
 					if ($search_email) { $sql .= "AND (user_email LIKE '%".$search_email."%') "; }
 					if ($search_last) { $sql .= "AND (last_name LIKE '%".$search_last."%') "; }
 					if ($search_prd_id) { $sql .= "AND (prd_transaction_id = '".$search_prd_id."') "; }
@@ -763,7 +802,7 @@ class harborPRD {
 
 					echo "<p>Below are the twenty most recent terminal charges. If the order you would like to refund is not listed, please use the fields below to search the database.</p>";
 
-					$sql = "SELECT * FROM wp_harbor_orders WHERE (product_name LIKE 'TERMINAL PAYMENT') AND (RESULT = 1) ORDER BY order_time DESC LIMIT 20;";
+					$sql = "SELECT * FROM wp_Harbor_orders WHERE (product_name LIKE 'TERMINAL PAYMENT') AND (RESULT = 1) ORDER BY order_time DESC LIMIT 20;";
 				}
 				$orders = $wpdb->get_results($sql, ARRAY_A);
 
@@ -863,18 +902,9 @@ class harborPRD {
 			echo '<p><label><em>State</em>: <input type="text" id="state" value=""></label></p>';
 			echo '<p><label><em>Zip</em>: <input type="text" id="zip" value=""></label></p>';
 			echo '<p><label><em>Country</em>: <input type="text" id="country" value=""></label></p>';
-			//echo '<p><label>Copyright: <input type="text" id="copyright" value=""></label></p>';
-			//echo '<p><label>Current Year: <input type="text" id="currentyear" value=""></label></p>';
 			echo '<p><label>Keycode: <input type="text" id="keycode" value=""></label></p>';
-			//echo '<p><label>Suborder: <input type="text" id="suborder" value=""></label></p>';
-			//echo '<p><label>Subtype: <input type="text" id="subtype" value=""></label></p>';
 			echo '<p><label><em>Transaction ID</em>: <input type="text" id="transid" value=""></label></p>';
-			//echo '<p><label>Subtotal: <input type="text" id="subtotal" value=""></label></p>';
-			//echo '<p><label>Shipping: <input type="text" id="shipping" value=""></label></p>';
-			//echo '<p><label>Tax: <input type="text" id="tax" value=""></label></p>';
-			//echo '<p><label>Order Total: <input type="text" id="ordertotal" value=""></label></p>';
-			//echo '<p><label>Amount Due: <input type="text" id="amtdue" value=""></label></p>';
-			echo '<p><label><strong>Harbor Source Code</strong>: <input type="text" id="hbsc" value=""></label></p>';
+			echo '<p><label><strong>Harbor MQSC</strong>: <input type="text" id="harborsc" value=""></label></p>';
 			echo '<p><label><em>Harbor User ID</em>: <input type="text" id="uid" value=""></label></p>';
 			echo '<p class="submit"><input type="button" id="ajax-button" class="button button-primary" value="Subscribe &raquo;" /></p>';
 			wp_nonce_field('harbor-prd-terminal-newsub');
@@ -892,9 +922,11 @@ class harborPRD {
 
 	private function _terminal_charge_via_prd($post_values) {
 
+		if ( ! $this->is_prd_awake() ) { return false; }
+
 		$current_user = wp_get_current_user();
 
-		$harbor_prd = get_option('hb-prd');
+		$harbor_prd = get_option('harbor-prd');
 		if (!$harbor_prd) {
 			$this->_errors[] = 'The credit card processor has not been configured.';
 			return false;
@@ -964,7 +996,7 @@ class harborPRD {
 			'gift_ref'				=> '',
 			'program_type_id'		=> 'SP',
 			'product'				=> 'TRMNL',
-			'key_code'				=> 'HARBOR',
+			'key_code'				=> 'Harbor',
 			'offer_pmt'				=> $price,
 			'offer_tax'				=> 0,
 			'offer_baldue'			=> 0,
@@ -1064,7 +1096,7 @@ class harborPRD {
 
 			$prd_error = get_prd_error($r->error[0]->errno, 'ec');
 
-		    $this->_errors[] = $r->error[0]->errno.': <b>'.$prd_error.'</b>';
+			$this->_errors[] = $r->error[0]->errno.': <b>'.$prd_error.'</b>';
 
 			return false;
 
@@ -1072,6 +1104,8 @@ class harborPRD {
 	}
 
 	private function _terminal_refund_via_prd($refund_id, $amount) {
+
+		if ( ! $this->is_prd_awake() ) { return false; }
 
 		global $wpdb;
 		$current_user = wp_get_current_user();
@@ -1099,7 +1133,7 @@ class harborPRD {
 
 		$headers = array();
 
-		$sql = "SELECT prd_customer_id, prd_transaction_id, prd_reference_id, prd_sp_ref_id, payment, think_orderhdr_id FROM wp_harbor_orders WHERE (id = ".$refund_id.")";
+		$sql = "SELECT prd_customer_id, prd_transaction_id, prd_reference_id, prd_sp_ref_id, payment, think_orderhdr_id FROM wp_Harbor_orders WHERE (id = ".$refund_id.")";
 		$order = $wpdb->get_row($sql, ARRAY_A);
 
 		if (!$order) {
@@ -1186,7 +1220,7 @@ class harborPRD {
 			$now = date('M d, Y');
 			$balance = $order['payment'] - $amount;
 
-			$sql = "UPDATE wp_harbor_orders SET payment = ".$balance.", order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.".\r\nOrder payment total has been adjusted.') WHERE (id = ".$refund_id.");";
+			$sql = "UPDATE wp_Harbor_orders SET payment = ".$balance.", order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.".\r\nOrder payment total has been adjusted.') WHERE (id = ".$refund_id.");";
 			$wpdb->query($sql);
 
 			$this->_transactionID = $r->response->TRANSACTION_ID;
@@ -1197,7 +1231,7 @@ class harborPRD {
 
 			$prd_error = get_prd_error($r->error[0]->errno, 'sp');
 
-		    $this->_errors[] = $r->error[0]->errno.': <b>'.$prd_error.'</b>';
+			$this->_errors[] = $r->error[0]->errno.': <b>'.$prd_error.'</b>';
 
 			return false;
 
@@ -1283,12 +1317,12 @@ class harborPRD {
 			'think_subscrip_id'				=> 0,
 		);
 
-		$wp_harbor_orders = array_merge($defaults, $new_values);
+		$wp_Harbor_orders = array_merge($defaults, $new_values);
 
-		$keys = implode(", ", array_keys($wp_harbor_orders));
-		$vals = "'".implode("', '", $wp_harbor_orders)."'";
+		$keys = implode(", ", array_keys($wp_Harbor_orders));
+		$vals = "'".implode("', '", $wp_Harbor_orders)."'";
 
-		$sql = "INSERT INTO wp_harbor_orders (".$keys.") VALUES (".$vals.")";
+		$sql = "INSERT INTO wp_Harbor_orders (".$keys.") VALUES (".$vals.")";
 
 		global $wpdb;
 		$wpdb->query($sql);
@@ -1298,9 +1332,9 @@ class harborPRD {
 
 	/**
 	 * given a one dimensional array:
-	 *   -sanitize the data
-	 *   -remove escape characters
-	 *   -hand back the raw values as the array
+	 *	-sanitize the data
+	 *	-remove escape characters
+	 *	-hand back the raw values as an array
 	 * @param $data
 	 * @return array
 	*/
@@ -1405,7 +1439,7 @@ class harborPRD {
 								$prd_auto_renew = $s->FREQUENCY.$s->PERIOD;
 								$prd_sp_ref_id = $s->LAST_TRANS_REFID;
 								if ($renewal_date && $prd_auto_renew && $prd_sp_ref_id) {
-									$wpdb->query($wpdb->prepare("UPDATE wp_harbor_orders SET renewal_date = %s, prd_auto_renew = %s WHERE (prd_sp_ref_id = %s) AND (prd_auto_renew IS NULL);", $renewal_date, $prd_auto_renew, $prd_sp_ref_id));
+									$wpdb->query($wpdb->prepare("UPDATE wp_Harbor_orders SET renewal_date = %s, prd_auto_renew = %s WHERE (prd_sp_ref_id = %s) AND (prd_auto_renew IS NULL);", $renewal_date, $prd_auto_renew, $prd_sp_ref_id));
 								}
 							}
 						} else {
@@ -1414,7 +1448,7 @@ class harborPRD {
 							if (strtotime($s->JOIN_DATE) < strtotime('2016-03-10')) {
 								$prd_sp_ref_id = $s->LAST_TRANS_REFID;
 								if ($prd_sp_ref_id) {
-									$wpdb->query($wpdb->prepare("UPDATE wp_harbor_orders SET prd_auto_renew = 'NO' WHERE (prd_sp_ref_id = %s) AND (prd_auto_renew IS NULL);", $prd_sp_ref_id));
+									$wpdb->query($wpdb->prepare("UPDATE wp_Harbor_orders SET prd_auto_renew = 'NO' WHERE (prd_sp_ref_id = %s) AND (prd_auto_renew IS NULL);", $prd_sp_ref_id));
 								}
 							}
 							$recur = 'None';
@@ -1606,8 +1640,10 @@ class harborPRD {
 				}
 			}
 		} else {
-			if ( in_array($status[0], $entitle[$category] ) ) {
-				$output['entitle'] = true;
+			if ( is_array( $entitle[$category] ) ) {
+				if ( in_array($status[0], $entitle[$category] ) ) {
+					$output['entitle'] = true;
+				}
 			}
 		}
 
@@ -1625,7 +1661,12 @@ class harborPRD {
 		return ($output) ? $output : $fallback;
 	}
 
-	public function gatekeeper($customer_id) {
+// ------------------------------------------------------------------------
+// GATEKEEPER API FUNCTIONS
+
+	public function gatekeeper($customer_id, $user_id = false) {
+
+		if ( ! $this->is_prd_awake() ) { return false; }
 
 		$harbor_prd = get_option('harbor-prd');
 		if (!$harbor_prd) {
@@ -1715,13 +1756,86 @@ class harborPRD {
 			mail($debug_email, '3.GATEKEEPER PRD RESPONSE', print_r($r, true));
 		}
 
+		if ( $harbor_prd['pull_userdata'] ) { $this->_pull_userdata($r, $user_id); }
+
 		return $r;
 	}
 
+	private function _pull_userdata( $gatekeeper_object, $user_id = false ) {
+
+		$harbor_prd = get_option('harbor-prd');
+
+		if ( !$harbor_prd['pull_userdata'] ) { return false; }
+
+		if (!$gatekeeper_object) { return false; }
+		if (!$gatekeeper_object->response->CUST_FOUND == 'Y') { return false; }
+		if (!is_object($gatekeeper_object->response->CUSTOMER_INFO)) { return false; }
+
+		$debug = $debug_email = false;
+		if (!empty($harbor_prd['debug'])) {
+			$debug = true;
+			$debug_email = $harbor_prd['debug_email'];
+		}
+
+		$prd_cust = $gatekeeper_object->response->CUSTOMER_INFO;
+
+		if ( !$user_id ) {
+			global $wpdb;
+			$sql = $wpdb->prepare("SELECT user_id FROM wp_usermeta WHERE (meta_key = '') AND (meta_value = %s);", $prd->CUSTOMER_NUMBER);
+			$user_id = $wpdb->get_var($sql);
+		}
+
+		if ( !$user_id ) { return false; }
+
+		$harbor_meta = get_user_meta($user_id);
+
+		// $vars: PRD object name => HAVEN user_meta name
+
+		$vars = array(
+			'FIRST'					=> 'first_name',
+			'MI'					=> 'middle_initial',
+			'LAST'					=> 'last_name',
+			'PROFESSIONAL_TITLE'	=> 'title',
+			'BUSINESS_NAME'			=> 'business_name',
+			'ADD1'					=> 'address',
+			'ADD2'					=> 'address2',
+			'ADD3'					=> 'address3',
+			'CITY'					=> 'city',
+			'ALTCITY'				=> 'alt_city',
+			'ST'					=> 'state',
+			'STATE_NAME'			=> 'alt_state',
+			'ZIP'					=> 'zip_code',
+			'COUNTRY'				=> 'country',
+			'PHONE'					=> 'phone',
+			'TITLE'					=> 'alt_title',
+			'SUFFIX'				=> 'suffix',
+			'CUSTOMER_NUMBER'		=> 'prd_customer_id',
+			'OPTIN'					=> 'prd_optin',
+		);
+
+		$report = array();
+
+		foreach ( $vars as $prd_var => $harbor_var ) {
+			if ( $prd_cust->$prd_var && $prd_cust->$prd_var != $harbor_meta[$harbor_var] ) {
+				update_user_meta($user_id, $harbor_var, $prd_cust->$prd_var);
+				$report[$harbor_var] = $prd_cust->$prd_var;
+			}
+		}
+
+		if ($debug) {
+			if ( empty($report) ) { $report[] = 'Nothing updated.'; }
+			mail($debug_email, 'GATEKEEPER _pull_userdata() DEBUG', print_r($report, true));
+		}
+
+		return true;
+	}
+
 // ------------------------------------------------------------------------
-// SUBSCRIPTION CHANGES
+// MANAGE SPECIAL PROGRAMS API FUNCTIONS
 
 	public function manage_prd($action = false, $order_id = 0, $amount = 0, $date = false) {
+
+		if ( ! $this->is_prd_awake() ) { return false; }
 
 		global $wpdb;
 		$current_user = wp_get_current_user();
@@ -1763,12 +1877,22 @@ class harborPRD {
 		$amount	= ($amount) ? number_format(preg_replace('/[\$,]/', '', $amount), 2, '.', '') : 0;
 		$date = ($date) ? date('m/d/Y', strtotime($date)) : false;
 
-		$sql = "SELECT product_id, offer_code, payment, prd_customer_id, prd_transaction_id, prd_reference_id, prd_sp_ref_id, think_orderhdr_id FROM wp_harbor_orders WHERE (id = ".$order_id.")";
+		$sql = "SELECT product_id, offer_code, payment, prd_customer_id, prd_transaction_id, prd_reference_id, prd_sp_ref_id, think_orderhdr_id FROM wp_Harbor_orders WHERE (id = ".$order_id.")";
 		$order = $wpdb->get_row($sql, ARRAY_A);
 
 		if (!$order) {
 			$this->_errors[] = 'The transaction referenced in the refund order could not be found in the Harbor database.';
 			return false;
+		}
+
+		$sql = "SELECT id, payment_type, payment, prd_sp_ref_id FROM wp_Harbor_orders WHERE (correlation_id = ".$order_id.") AND (payment_type = 'AUTO') ORDER BY order_time DESC LIMIT 1;";
+
+		$auto_renew_order = $wpdb->get_row($sql, ARRAY_A);
+
+		if ( $auto_renew_order ) {
+			$order['prd_sp_ref_id'] = strtoupper($auto_renew_order['prd_sp_ref_id']);
+			$order['latest_payment'] = $auto_renew_order['payment'];
+			$order['latest_renewal_id'] = $auto_renew_order['id'];
 		}
 
 		$prd_product_id = get_field('prd_product_id', $order['product_id'], false);
@@ -1818,7 +1942,7 @@ class harborPRD {
 
 			case 'set_recurring_fields':
 
-				$sql = "SELECT period, freq, amt, currency FROM wp_harbor_offers WHERE (id = ".$order['offer_code'].");";
+				$sql = "SELECT period, freq, amt, currency FROM wp_Harbor_offers WHERE (id = ".$order['offer_code'].");";
 				$offer = $wpdb->get_row($sql, ARRAY_A);
 
 				$prd_recurring_amt	= number_format(preg_replace('/[\$,]/', '', $offer['amt']), 2, '.', '');
@@ -1910,19 +2034,26 @@ class harborPRD {
 				$this->_insert_order($new_values);
 
 				$now = date('M d, Y');
-				$balance = $order['payment'] - $amount;
+				$balance = ( array_key_exists('latest_payment', $order) ) ? $order['latest_payment'] - $amount : $order['payment'] - $amount;
 
-				$sql = "UPDATE wp_harbor_orders SET payment = ".$balance.", order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.".\r\nOrder payment total has been adjusted.'), prd_auto_renew = NULL WHERE (id = ".$order_id.");";
-				$wpdb->query($sql);
+				if ( array_key_exists('latest_renewal_id', $order) ) {
+					$sql = "UPDATE wp_Harbor_orders SET payment = ".$balance.", order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.".\r\nOrder payment total has been adjusted.'), prd_auto_renew = NULL WHERE (id = ".$order['latest_renewal_id'].");";
+					$wpdb->query($sql);
+					$sql = "UPDATE wp_Harbor_orders SET order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.". Refund applied to latest auto-renewal balance.'), prd_auto_renew = NULL WHERE (id = ".$order_id.");";
+					$wpdb->query($sql);
+				} else  {
+					$sql = "UPDATE wp_Harbor_orders SET payment = ".$balance.", order_summary = CONCAT(order_summary, '\r\nRefunded $".$amount." on ".$now.".\r\nOrder payment total has been adjusted.'), prd_auto_renew = NULL WHERE (id = ".$order_id.");";
+					$wpdb->query($sql);
+				}
 
 			} else if ($action == 'cancel_program') {
 
-				$sql = "UPDATE wp_harbor_orders SET order_summary = CONCAT(order_summary, '\r\n\r\nRecurring charge was cancelled on ".$now." by ".$csr_name.".'), prd_auto_renew = 'CANCELED' WHERE (id = ".$order_id.");";
+				$sql = "UPDATE wp_Harbor_orders SET order_summary = CONCAT(order_summary, '\r\n\r\nRecurring charge was cancelled on ".$now." by ".$csr_name.".'), prd_auto_renew = 'CANCELED' WHERE (id = ".$order_id.");";
 				$wpdb->query($sql);
 
 			} else if ($action == 'set_recurring_fields') {
 
-				$sql = "UPDATE wp_harbor_orders SET order_summary = CONCAT(order_summary, '\r\n\r\nRecurring expire date was adjusted on ".$now." by ".$csr_name.".\r\nNext charge will occur on ".$date.", one month prior to expiration.\r\nSubsequent renewals will occur at the frequency set in the product offer.'), prd_json_response = CONCAT('[', prd_json_response, ',".$response."]') WHERE (id = ".$order_id.");";
+				$sql = "UPDATE wp_Harbor_orders SET order_summary = CONCAT(order_summary, '\r\n\r\nRecurring expire date was adjusted on ".$now." by ".$csr_name.".\r\nNext charge will occur on ".$date.", one month prior to expiration.\r\nSubsequent renewals will occur at the frequency set in the product offer.'), prd_json_response = CONCAT('[', prd_json_response, ',".$response."]') WHERE (id = ".$order_id.");";
 				$wpdb->query($sql);
 
 			}
@@ -1937,6 +2068,8 @@ class harborPRD {
 
 			$this->_errors[] = $r->error[0]->errno.': <b>'.$prd_error.'</b>';
 
+			mail($debug_email, '[PRD] manage_prd() REFUND FAILURE', "ACTION: ".$action."\r\nORDER ID: ".$order_id."\r\nREFUND AMOUNT: ".$amount."\r\nRECURRING DATE: ".$date."\r\nPRD ERROR: ".$prd_error."\r\n\r\nORDER DATA: ".print_r($order, 1)."\r\n\r\nPRD POST: ".print_r($post, 1)."\r\n\r\nPRD RESPONSE: ".print_r($r, 1));
+
 			return false;
 
 		}
@@ -1946,7 +2079,14 @@ class harborPRD {
 
 		global $wpdb;
 
-		$sql = $wpdb->prepare("SELECT o.id, o.product_id, o.payment_type, o.user_id, o.track, o.offer_code, o.prd_transaction_id, f.period, f.freq, f.publication AS pub_id, m.meta_value AS 'access_control_name' FROM wp_harbor_orders o LEFT JOIN wp_harbor_offers f ON o.offer_code = f.id LEFT JOIN wp_postmeta m ON o.product_id = m.post_id AND m.meta_key = 'access_control_name' WHERE (o.prd_sp_ref_id = %s) AND NOT (o.payment_type = 'AUTO');", $args['original_sp_ref_id']);
+		$sql = $wpdb->prepare("SELECT o.id, o.product_id, o.payment_type, o.user_id, o.track, o.offer_code, o.prd_transaction_id, f.period, f.freq, f.publication AS pub_id, m.meta_value AS 'access_control_name'
+		FROM wp_Harbor_orders o
+			LEFT JOIN wp_Harbor_offers f ON o.offer_code = f.id
+			LEFT JOIN wp_postmeta m ON o.product_id = m.post_id AND m.meta_key = 'access_control_name'
+		WHERE (o.prd_sp_ref_id = %s)
+			AND NOT (o.payment_type = 'AUTO')
+			AND NOT (order_type = 'r');", $args['original_sp_ref_id']);
+
 		$order = $wpdb->get_row($sql, ARRAY_A);
 
 		$new_values = array(
@@ -1960,6 +2100,7 @@ class harborPRD {
 			'offer_code'				=> $order['offer_code'],
 			'payment_type'				=> 'AUTO',//$order['payment_type'],
 			'prd_customer_id'			=> $args['prd_customer_id'],
+			'prd_reference_id'			=> $args['original_sp_ref_id'],
 			'prd_sp_ref_id'				=> $args['prd_sp_ref_id'],
 			'prd_auto_renew'			=> '1',
 			'renewal_date'				=> $args['prd_next_charge_date'],
@@ -1977,7 +2118,7 @@ class harborPRD {
 
 			$order_summary = '<br/>Renewed on '.date('Y-m-d').' for $'.$args['prd_transaction_amount'].' using card ending in '.$args['prd_cc_last'].'.';
 
-			$sql = $wpdb->prepare("UPDATE wp_harbor_orders SET renewal_date = %s, order_summary = CONCAT(order_summary, %s) WHERE (id = %d);", $args['prd_next_charge_date'], $order_summary, $order['id']);
+			$sql = $wpdb->prepare("UPDATE wp_Harbor_orders SET renewal_date = %s, order_summary = CONCAT(order_summary, %s) WHERE (id = %d);", $args['prd_next_charge_date'], $order_summary, $order['id']);
 			$wpdb->query($sql);
 
 			// EXPIRATION DATE
@@ -2028,19 +2169,135 @@ class harborPRD {
 				'payment'			=> $args['prd_transaction_amount'],
 			);
 
-			do_action('harbor-ordered-renewal', $think_args);
+			do_action('Harbor-ordered-renewal', $think_args);
 
-			$harborsc = get_user_meta($order['user_id'], 'hbsc', true);
+			$harborsc = get_user_meta($order['user_id'], 'harborsc', true);
 			$trans_args = array(
-				'type'      => 'activate-auto-renew',
-				'type_desc' => 'Add Auto-Renew',
-				'itemId'    => $order['id'],
-				'user_id'   => $order['user_id'],
-				'asid'		=> $harborsc,
+				'type'			=> 'activate-auto-renew',
+				'type_desc'		=> 'Add Auto-Renew',
+				'itemId'		=> $order['id'],
+				'user_id'		=> $order['user_id'],
+				'asid'			=> $harborsc,
 			);
 
-			do_action( 'harbor-transaction', $trans_args );
+			do_action( 'Harbor-transaction', $trans_args );
+
+			return true;
+
+		} else { // ERROR CONDITION
+
+			$err_message = "ARGS:\r\n".print_r($args,1)."\r\n\r\n";
+			$err_message .= "SQL:\r\n".$sql."\r\n\r\n";
+			$err_message .= "NEW VALUES:\r\n".print_r($new_values,1)."\r\n\r\n";
+			$err_message .= "ORDER ID:\r\n".print_r($order_id,1)."\r\n\r\n";
+
+			mail('mwndll@gmail.com', '[PRD] Auto-Renewal Error', $err_message);
+
+			return false;
+
 		}
+	}
+
+// ------------------------------------------------------------------------
+// CUSTOMER UPDATE API FUNCTIONS
+
+	public function customer_update( $user_id ) {
+
+		if ( ! $this->is_prd_awake() ) { return false; }
+
+		$harbor_prd = get_option('harbor-prd');
+
+		if ( !$harbor_prd['push_userdata'] ) { return false; }
+
+		$debug = $debug_email = false;
+		if (!empty($harbor_prd['debug'])) {
+			$debug = true;
+			$debug_email = $harbor_prd['debug_email'];
+		}
+
+		$user = get_userdata( $user_id );
+		$meta = get_user_meta( $user_id );
+
+		// required variables
+		$prd_customer_id = $meta['prd_customer_id'][0];
+		$last_name = $meta['last_name'][0];
+		$city = substr($meta['city'][0],0,25);
+		$state = strtoupper(substr($meta['state'][0],0,2));
+		$zip_code = strtoupper(substr($meta['zip_code'][0],0,10));
+		$country = strtoupper($meta['country'][0]);
+
+		$prd_country_array = prd_country_array();
+		if ( array_key_exists($country, $prd_country_array) ) { $country = substr($prd_country_array[$country],0,30); }
+		if ( $country == 'US' || $country == 'UNITED STATES' ) { $country = 'USA'; }
+
+		if ( !is_numeric($prd_customer_id) ) { //return false;
+		}
+		if ( empty($last_name) || empty($city) || empty($state) || empty($country) ) { //return false;
+		}
+
+		$headers = array();
+
+		$post = array(
+			'org'				=> $harbor_prd['org'],
+			'program_type_id'	=> 'MS',
+			'test_mode'			=> $harbor_prd['test_mode'],
+			'app_version'		=> $harbor_prd['app_version'],
+			'customer_number'	=> $prd_customer_id,
+			'last'				=> $last_name,
+			'city'				=> $city,
+			'st'				=> $state,
+			'zip'				=> $zip_code,
+			'country'			=> $country,
+		);
+
+		// optional variables
+		if ( !empty($meta['first_name'][0]) ) { $post['first'] = substr($meta['first_name'][0],0,15); }
+		if ( !empty($meta['address'][0]) ) { $post['add1'] = substr($meta['address'][0],0,40); }
+		if ( !empty($meta['address2'][0]) ) { $post['add2'] = substr($meta['address2'][0],0,40); }
+		if ( !empty($meta['phone'][0]) ) { $post['phone'] = substr($meta['phone'][0],0,15); }
+
+		$post_query = http_build_query($post);
+
+		$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+
+		$test = ( $harbor_prd['test_mode'] == 'Y' ) ? 'test/' : '';
+		$url = $harbor_prd['base_url'].'/rest/customer_update/'.$harbor_prd['org'].'/v'.$harbor_prd['app_version'].'/'.$test.'json/';
+
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_query);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($ch, CURLOPT_VERBOSE,true);
+		curl_setopt($ch, CURLOPT_FAILONERROR, false);
+		curl_setopt($ch, CURLOPT_AUTOREFERER, false );
+		curl_setopt($ch, CURLOPT_REFERER, $referer);
+		curl_setopt($ch, CURLOPT_SSLVERSION, '6');
+
+		curl_setopt($ch, CURLOPT_USERPWD, $harbor_prd['userid4'].':'.$harbor_prd['pw4']);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+
+		$response = curl_exec($ch);
+
+		$r = json_decode($response);
+
+		if ($debug) {
+			if ( empty($report) ) { $report[] = 'Nothing updated.'; }
+			mail($debug_email, 'PRD _customer_update() REPORT', "POST: ".print_r($post, true)."\r\n\r\nURL: ".$url."\r\n\r\nRESPONSE: ".print_r($r, true));
+		}
+
+		return true;
+
+	}
+
+	private function _push_userdata( $user_id ) {
+
+		$harbor_prd = get_option('harbor-prd');
+
+		if ( !$harbor_prd['push_userdata'] ) { return false; }
+
 	}
 
 // ------------------------------------------------------------------------
@@ -2084,7 +2341,7 @@ class harborPRD {
 		$entitlements = array();
 		$auto_renew = array();
 
-		$r = $this->gatekeeper($customer_id);
+		$r = $this->gatekeeper($customer_id, $user_id);
 
 		$debug = $debug_email = false;
 		if (!empty($this->_settings['debug'])) {
@@ -2114,75 +2371,6 @@ class harborPRD {
 			}
 
 			$now = time();
-
-			if ($r->response->SPECIAL_PROGRAMS) {
-
-				foreach($r->response->SPECIAL_PROGRAMS as $key => $s) {
-					if ($s->IS_DONOR != 'Y') { 
-
-						$pub_id = false;
-
-						if (array_key_exists($s->SP_CODE, $products['sp'])) {
-							$secondary_sp_code = (array_key_exists($s->SECONDARY_SP_CODE, $products['sp'][$s->SP_CODE])) ? $s->SECONDARY_SP_CODE : 0;
-							$pub_id = $products['sp'][$s->SP_CODE][$secondary_sp_code];
-						}
-
-						if ($pub_id) { 
-
-							if ($s->STATUS_FLAG == 'A') {
-
-								$expires = strtotime($s->ACCESS_EXP_DATE) + 86399;
-
-								// to entitle single issues of a publication, SECONDARY_SP_CODE must
-								// follow format XX###, where XX is valid pub_id and ### is an integer
-								if (preg_match( '/^'.$pub_id.'[0-9]*$/', $s->SECONDARY_SP_CODE)) {
-									$issue_number = intval(preg_replace('/^\D*/', '', $s->SECONDARY_SP_CODE));
-									$pub_id .= '-'.$issue_number;
-								}
-
-								switch ($s->SECONDARY_SP_CODE) {
-									case 'COMBO':
-									case 'ALL-ACCESS':
-									case 'CB':
-									case 'C':
-										$entitlements[$pub_id]['print'] = $expires;
-										$entitlements[$pub_id]['web'] = $expires;
-										$entitlements[$pub_id]['tablet'] = $expires;
-										break;
-									case 'DIGITAL':
-									case 'DIG-COMBO':
-									case 'D':
-										$entitlements[$pub_id]['web'] = $expires;
-										$entitlements[$pub_id]['tablet'] = $expires;
-										break;
-									case 'PRINT':
-									case 'P':
-										$entitlements[$pub_id]['print'] = $expires;
-										break;
-									case 'TABLET':
-									case 'TABLE':
-									case 'T':
-										$entitlements[$pub_id]['tablet'] = $expires;
-										break;
-									case 'WEB':
-									case 'W':
-									case 'ALL':
-									default:
-										$entitlements[$pub_id]['web'] = $expires;
-										break;
-								}
-
-								if ( $s->RECURRING_STATUS == 'A' && $s->PENDING_CANCEL != 'Y' ) {
-									$auto_renew[] = $pub_id;
-								}
-
-							} // if STATUS_FLAG
-
-						} // if $pub_id
-
-					} // if IS_DONOR
-				} // foreach SPECIAL_PROGRAMS
-			} // if SPECIAL_PROGRAMS
 
 			if ($r->response->ORDER_HISTORY) {
 
@@ -2219,12 +2407,14 @@ class harborPRD {
 											$pub_id = $products[$category_code][$s->PROD_CODE][$secondary_code];
 											$default_entitlement = $default_entitlements[$category_code][$s->PROD_CODE][$secondary_code];
 
-											// XYZ makes heavy use of continuities, but continuities don't have access levels.
-											// Hoever, PRD has a pattern in their OFFER_PRODUCT codes that indicates channel.
-											if ( strpos(get_site_url(), 'harbor') !== false ) {
+											// UHN makes heavy use of continuities, but continuities don't have access levels.
+											// However, PRD has a pattern in their OFFER_PRODUCT codes that indicates channel.
+											if ( strpos(get_site_url(), 'universityhealthnews') !== false ) {
 												$ch = substr($offer_product, 0, 2);
 												switch ( $ch ) {
 													case 'SR':
+													case 'P9':
+													case 'U9':
 													case 'M9': $channel = 'PRINT'; break;
 													case 'CR':
 													case 'C9': $channel = 'COMBO'; break;
@@ -2234,6 +2424,8 @@ class harborPRD {
 												}
 											}
 
+										} else {
+											mail( 'mwndll@gmail.com', 'UHN ORDER w/o OFFER_PRODUCTS ARRAY', print_r( $r, 1 ) );
 										}
 									} else {
 										$pub_id = $products[$category_code][$s->PROD_CODE][0];
@@ -2278,30 +2470,33 @@ class harborPRD {
 										case 'ALL-ACCESS':
 										case 'CB':
 										case 'C':
-											$entitlements[$pub_id]['print'] = $expires;
-											$entitlements[$pub_id]['web'] = $expires;
-											$entitlements[$pub_id]['tablet'] = $expires;
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'print', $expires );
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
+											//$entitlements[$pub_id]['print'] = $expires;
+											//$entitlements[$pub_id]['web'] = $expires;
+											//$entitlements[$pub_id]['tablet'] = $expires;
 											break;
 										case 'DIGITAL':
 										case 'DIG-COMBO':
 										case 'D':
-											$entitlements[$pub_id]['web'] = $expires;
-											$entitlements[$pub_id]['tablet'] = $expires;
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
 											break;
 										case 'PRINT':
 										case 'P':
-											$entitlements[$pub_id]['print'] = $expires;
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'print', $expires );
 											break;
 										case 'TABLET':
 										case 'TABLE':
 										case 'T':
-											$entitlements[$pub_id]['tablet'] = $expires;
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
 											break;
 										case 'WEB':
 										case 'ALL':
 										case 'W':
 										default:
-											$entitlements[$pub_id]['web'] = $expires;
+											$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
 											break;
 									}
 
@@ -2316,6 +2511,78 @@ class harborPRD {
 					} // if IS_DONOR
 				} // foreach ORDER_HISTORY
 			} // if ORDER_HISTORY
+
+			if ($r->response->SPECIAL_PROGRAMS) {
+
+				foreach($r->response->SPECIAL_PROGRAMS as $key => $s) {
+					if ($s->IS_DONOR != 'Y') { 
+
+						$pub_id = false;
+
+						if (array_key_exists($s->SP_CODE, $products['sp'])) {
+							$secondary_sp_code = (array_key_exists($s->SECONDARY_SP_CODE, $products['sp'][$s->SP_CODE])) ? $s->SECONDARY_SP_CODE : 0;
+							$pub_id = $products['sp'][$s->SP_CODE][$secondary_sp_code];
+						}
+
+						if ($pub_id) { 
+
+							if ($s->STATUS_FLAG == 'A') {
+
+								$expires = strtotime($s->ACCESS_EXP_DATE) + 86399;
+
+								// to entitle single issues of a publication, SECONDARY_SP_CODE must
+								// follow format XX###, where XX is valid pub_id and ### is an integer
+								if (preg_match( '/^'.$pub_id.'[0-9]*$/', $s->SECONDARY_SP_CODE)) {
+									$issue_number = intval(preg_replace('/^\D*/', '', $s->SECONDARY_SP_CODE));
+									$pub_id .= '-'.$issue_number;
+								}
+
+								switch ($s->SECONDARY_SP_CODE) {
+									case 'COMBO':
+									case 'ALL-ACCESS':
+									case 'CB':
+									case 'C':
+										//$entitlements[$pub_id]['print'] = $expires;
+										//$entitlements[$pub_id]['web'] = $expires;
+										//$entitlements[$pub_id]['tablet'] = $expires;
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'print', $expires );
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
+										break;
+									case 'DIGITAL':
+									case 'DIG-COMBO':
+									case 'D':
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
+										break;
+									case 'PRINT':
+									case 'P':
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'print', $expires );
+										break;
+									case 'TABLET':
+									case 'TABLE':
+									case 'T':
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'tablet', $expires );
+										break;
+									case 'WEB':
+									case 'W':
+									case 'ALL':
+									default:
+										$entitlements = $this->_insert_newest_entitlement( $entitlements, $pub_id, 'web', $expires );
+										break;
+								}
+
+								if ( $s->RECURRING_STATUS == 'A' && $s->PENDING_CANCEL != 'Y' ) {
+									$auto_renew[] = $pub_id;
+								}
+
+							} // if STATUS_FLAG
+
+						} // if $pub_id
+
+					} // if IS_DONOR
+				} // foreach SPECIAL_PROGRAMS
+			} // if SPECIAL_PROGRAMS
 
 		} else {
 
@@ -2336,6 +2603,16 @@ class harborPRD {
 			update_user_meta( $user_id, 'prd_auto_renew', $auto_renew );
 		}
 
+		return $entitlements;
+	}
+
+	private function _insert_newest_entitlement( $entitlements = array(), $pub_id = false, $channel = false, $expires = false ) {
+		if ( $pub_id && $channel && $expires ) {
+			$old_expires = ( isset( $entitlements[$pub_id][$channel] ) ) ? $entitlements[$pub_id][$channel] : 0;
+			if ( $expires > $old_expires ) {
+				$entitlements[$pub_id][$channel] = $expires;
+			}
+		}
 		return $entitlements;
 	}
 
